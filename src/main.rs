@@ -18,6 +18,7 @@ struct Bot{
 #[async_trait]
 impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
+        println!("{}: {}", msg.author.name, msg.content);
         let mess_250_chars = msg.content.clone().chars().take(250).collect::<String>();
         let res = self.ai.send_message(&mess_250_chars).await;
         let bot_id = UserId(1120025595376586843);
