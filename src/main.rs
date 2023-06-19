@@ -1,3 +1,4 @@
+use crate::roastbotai::RoastBotAi;
 use anyhow::anyhow;
 use serenity::async_trait;
 use serenity::model::channel::Message;
@@ -6,12 +7,11 @@ use serenity::model::id::UserId;
 use serenity::prelude::*;
 use shuttle_secrets::SecretStore;
 use tracing::{error, info};
-use crate::roastbotai::RoastBotAi;
 
-mod roastbotai;
 mod dto;
+mod roastbotai;
 
-struct Bot{
+struct Bot {
     ai: roastbotai::RoastBotAi,
 }
 
@@ -50,10 +50,14 @@ async fn serenity(
     };
 
     // Set gateway intents, which decides what events the bot will be notified about
-    let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
+    let intents = GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::DIRECT_MESSAGES
+        | GatewayIntents::MESSAGE_CONTENT;
 
     let client = Client::builder(&token, intents)
-        .event_handler(Bot{ai:RoastBotAi::new()})
+        .event_handler(Bot {
+            ai: RoastBotAi::new(),
+        })
         .await
         .expect("Err creating client");
 

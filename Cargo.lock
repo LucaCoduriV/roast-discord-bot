@@ -1437,7 +1437,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "roast-discord-bot"
+name = "roast-discord-bot2"
 version = "0.1.0"
 dependencies = [
  "anyhow",
