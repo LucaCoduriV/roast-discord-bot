@@ -48,16 +48,16 @@ impl RoastBotAi {
     }
 }
 
-#[cfg(test)]
-mod test {
-
-    #[tokio::test]
-    async fn send_message_test() {
-        let mut ai = super::RoastBotAi::new();
-        let res = ai.send_message("Hello").await;
-        println!("{:?}", res);
-
-    }
-
-
-}
+// #[cfg(test)]
+// mod test {
+//
+//     #[tokio::test]
+//     async fn send_message_test() {
+//         let mut ai = super::RoastBotAi::new();
+//         let res = ai.send_message("Hello").await;
+//         println!("{:?}", res);
+//
+//     }
+//
+//
+// }
