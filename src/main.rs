@@ -30,6 +30,14 @@ impl EventHandler for Bot {
             if let Err(why) = msg.channel_id.say(&ctx.http, res.unwrap()).await {
                 error!("Error sending message: {:?}", why);
             }
+        } else {
+            if let Err(why) = msg
+                .channel_id
+                .say(&ctx.http, "couldn reach roastbot !")
+                .await
+            {
+                error!("Error sending message: {:?}", why);
+            }
         }
     }
 
