@@ -7,6 +7,7 @@ use serenity::model::gateway::Ready;
 use serenity::model::id::UserId;
 use serenity::prelude::*;
 use tracing::{error, info};
+use rand::Rng;
 
 mod dto;
 mod roastbotai;
@@ -19,12 +20,17 @@ struct Bot {
 impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
         info!("{}: {}", msg.author.name, msg.content);
-        let mess_250_chars = msg.content.clone().chars().take(250).collect::<String>();
-        let res = self.ai.send_message(&mess_250_chars).await;
         let bot_id = UserId(1120025595376586843);
-        if msg.author.id == bot_id {
+        let random = {
+            let mut rng = rand::thread_rng();
+            rng.gen_range(0..3)
+        };
+        if msg.author.id == bot_id || random == 1 {
             return;
         }
+
+        let mess_250_chars = msg.content.clone().chars().take(250).collect::<String>();
+        let res = self.ai.send_message(&mess_250_chars).await;
         if let Some(ai_message) = res  {
             if let Err(why) = msg.channel_id.say(&ctx.http, ai_message).await {
                 error!("Error sending message: {:?}", why);
@@ -39,7 +45,7 @@ impl EventHandler for Bot {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    dotenv::dotenv().unwrap();
+    dotenv::dotenv().ok();
     // Get the discord token set in `Secrets.toml`
     let token = if let Ok(token) = env::var("DISCORD_TOKEN") {
         token

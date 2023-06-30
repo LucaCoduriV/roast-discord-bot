@@ -1,0 +1,7 @@
+# fly.toml app configuration file generated for roast-discord-bot on 2023-07-01T00:49:38+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "roast-discord-bot"
+primary_region = "cdg"
