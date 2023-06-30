@@ -1437,7 +1437,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "roast-discord-bot2"
+name = "roast-discord-bot"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -1446,7 +1446,6 @@ dependencies = [
  "serde",
  "serde_json",
  "serenity",
- "shuttle-runtime",
  "shuttle-secrets",
  "shuttle-serenity",
  "tokio",

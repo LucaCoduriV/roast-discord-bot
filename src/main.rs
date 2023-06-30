@@ -1,3 +1,4 @@
+use std::env;
 use crate::roastbotai::RoastBotAi;
 use anyhow::anyhow;
 use serenity::async_trait;
@@ -5,14 +6,13 @@ use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::id::UserId;
 use serenity::prelude::*;
-use shuttle_secrets::SecretStore;
 use tracing::{error, info};
 
 mod dto;
 mod roastbotai;
 
 struct Bot {
-    ai: roastbotai::RoastBotAi,
+    ai: RoastBotAi,
 }
 
 #[async_trait]
@@ -22,20 +22,11 @@ impl EventHandler for Bot {
         let mess_250_chars = msg.content.clone().chars().take(250).collect::<String>();
         let res = self.ai.send_message(&mess_250_chars).await;
         let bot_id = UserId(1120025595376586843);
-        if res.is_some() && msg.author.id != bot_id {
-            // Sending a message can fail, due to a network error, an
-            // authentication error, or lack of permissions to post in the
-            // channel, so log to stdout when some error happens, with a
-            // description of it.
-            if let Err(why) = msg.channel_id.say(&ctx.http, res.unwrap()).await {
-                error!("Error sending message: {:?}", why);
-            }
-        } else {
-            if let Err(why) = msg
-                .channel_id
-                .say(&ctx.http, "couldn reach roastbot !")
-                .await
-            {
+        if msg.author.id == bot_id {
+            return;
+        }
+        if let Some(ai_message) = res  {
+            if let Err(why) = msg.channel_id.say(&ctx.http, ai_message).await {
                 error!("Error sending message: {:?}", why);
             }
         }
@@ -46,12 +37,11 @@ impl EventHandler for Bot {
     }
 }
 
-#[shuttle_runtime::main]
-async fn serenity(
-    #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> shuttle_serenity::ShuttleSerenity {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    dotenv::dotenv().unwrap();
     // Get the discord token set in `Secrets.toml`
-    let token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
+    let token = if let Ok(token) = env::var("DISCORD_TOKEN") {
         token
     } else {
         return Err(anyhow!("'DISCORD_TOKEN' was not found").into());
@@ -62,12 +52,13 @@ async fn serenity(
         | GatewayIntents::DIRECT_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT;
 
-    let client = Client::builder(&token, intents)
+    let mut client = Client::builder(&token, intents)
         .event_handler(Bot {
             ai: RoastBotAi::new(),
         })
         .await
         .expect("Err creating client");
 
-    Ok(client.into())
+    client.start().await?;
+    Ok(())
 }

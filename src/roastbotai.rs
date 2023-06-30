@@ -1,11 +1,13 @@
 use std::collections::LinkedList;
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 use reqwest::Client;
 use crate::dto::{BotResponse, Message};
 use crate::dto::Root;
 
 pub struct RoastBotAi {
     req_client: Client,
-    history: LinkedList<Message>,
+    history: Arc<Mutex<LinkedList<Message>>>,
 }
 
 impl RoastBotAi {
@@ -13,12 +15,13 @@ impl RoastBotAi {
         let client = reqwest::Client::new();
         Self {
             req_client: client,
-            history: LinkedList::new(),
+            history: Arc::new(Mutex::new(LinkedList::new())),
         }
     }
 
     pub async fn send_message(& self, message: &str) -> Option<String> {
-        let vec_history = self.history.iter().map(|x| x.clone()).collect::<Vec<Message>>();
+        let mut history = self.history.lock().await;
+        let vec_history = history.iter().map(|x| x.clone()).collect::<Vec<Message>>();
         let user_message = Message {
             role: "user".to_string(),
             content: message.to_string(),
@@ -30,11 +33,11 @@ impl RoastBotAi {
             style: "default".to_string(),
         };
 
-        // self.history.push_back(user_message);
-        //
-        // if self.history.len() > 16 {
-        //     self.history.pop_front();
-        // }
+        history.push_back(user_message);
+
+        if history.len() > 16 {
+            history.pop_front();
+        }
 
         let res = self.req_client.post("https://www.roastedby.ai/api/generate")
             .json(&root)
